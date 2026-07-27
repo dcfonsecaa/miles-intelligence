@@ -14,6 +14,12 @@ def test_free_campaign_receives_high_score():
     assert result.hc_score >= 75
 
 
+def test_unknown_cost_does_not_generate_zero_cpm():
+    result = calculate_scores(bonus_points=96_000, cost_brl=None, cost_status="unknown")
+    assert result.cpm is None
+    assert result.hc_score < 75
+
+
 def test_campaign_without_points_is_low_value():
     result = calculate_scores(bonus_points=0, cost_brl=100)
     assert result.cpm is None

@@ -3,6 +3,28 @@ import { listCampaigns, runDemoScan, runLiveloScan } from './services/api';
 
 const money = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
 const number = new Intl.NumberFormat('pt-BR');
+const typeLabels = {
+  subscription: 'Adesão',
+  upgrade: 'Upgrade',
+  points_purchase: 'Compra de pontos',
+  transfer_bonus: 'Transferência',
+  card_acquisition: 'Aquisição de cartão',
+  account_opening: 'Abertura de conta',
+  insurance: 'Seguro',
+  investment: 'Investimento',
+  shopping: 'Shopping',
+  travel: 'Viagem',
+  other: 'Outro',
+};
+const modalityLabels = {
+  monthly: 'Mensal',
+  annual: 'Anual',
+  one_time: 'Única',
+  recurring: 'Recorrente',
+  unknown: 'Não identificada',
+};
+const confidenceLabels = { high: 'Alta', medium: 'Média', low: 'Baixa' };
+const confidenceClasses = { high: 'text-bg-success', medium: 'text-bg-warning', low: 'text-bg-secondary' };
 
 export default function App() {
   const [campaigns, setCampaigns] = useState([]);
@@ -44,19 +66,24 @@ export default function App() {
 
   useEffect(() => { load(); }, []);
 
-  const stats = useMemo(() => ({
-    total: campaigns.length,
-    exceptional: campaigns.filter((item) => item.hc_score >= 80).length,
-    average: campaigns.length ? campaigns.reduce((sum, item) => sum + item.hc_score, 0) / campaigns.length : 0,
-  }), [campaigns]);
+  const stats = useMemo(() => {
+    const financiallyAssessed = campaigns.filter((item) => item.cost_status !== 'unknown');
+    return {
+      total: campaigns.length,
+      assessed: financiallyAssessed.length,
+      average: financiallyAssessed.length
+        ? financiallyAssessed.reduce((sum, item) => sum + item.hc_score, 0) / financiallyAssessed.length
+        : null,
+    };
+  }, [campaigns]);
 
   return (
     <main className="min-vh-100 bg-light">
       <header className="hero text-white py-5">
         <div className="container py-3">
-          <span className="badge text-bg-warning mb-3">Radar HC · MVP</span>
+          <span className="badge text-bg-warning mb-3">Radar HC · Model V2</span>
           <h1 className="display-5 fw-bold">Miles Intelligence</h1>
-          <p className="lead col-lg-8 mb-4">Detector de campanhas anormais, custo por milheiro e oportunidades excepcionais.</p>
+          <p className="lead col-lg-8 mb-4">Campanhas normalizadas para análise histórica e inteligência financeira.</p>
           <div className="d-flex flex-wrap gap-2">
             <button className="btn btn-light btn-lg" onClick={scanLivelo}>Consultar Livelo</button>
             <button className="btn btn-outline-light btn-lg" onClick={scanDemo}>Rodar demonstração</button>
@@ -64,18 +91,18 @@ export default function App() {
         </div>
       </header>
 
-      <section className="container py-5">
+      <section className="container-fluid px-4 py-5">
         {message && <div className="alert alert-info">{message}</div>}
         <div className="row g-3 mb-4">
           <Stat title="Campanhas monitoradas" value={number.format(stats.total)} />
-          <Stat title="Oportunidades excepcionais" value={number.format(stats.exceptional)} />
-          <Stat title="HC Score médio" value={stats.average.toFixed(1)} />
+          <Stat title="Custos avaliados" value={number.format(stats.assessed)} />
+          <Stat title="HC Score médio confirmado" value={stats.average === null ? 'Não calculado' : stats.average.toFixed(1)} />
         </div>
 
         <div className="card border-0 shadow-sm">
           <div className="card-body p-4">
             <div className="d-flex justify-content-between align-items-center mb-3">
-              <h2 className="h4 mb-0">Oportunidades detectadas</h2>
+              <h2 className="h4 mb-0">Campanhas normalizadas</h2>
               <button className="btn btn-outline-dark btn-sm" onClick={load}>Atualizar</button>
             </div>
             {loading ? <p>Carregando...</p> : campaigns.length === 0 ? (
@@ -83,16 +110,35 @@ export default function App() {
             ) : (
               <div className="table-responsive">
                 <table className="table align-middle">
-                  <thead><tr><th>Empresa</th><th>Campanha</th><th>Pontos</th><th>Custo</th><th>CPM</th><th>HC Score</th><th>Anomalia</th></tr></thead>
+                  <thead>
+                    <tr>
+                      <th>Empresa</th><th>Campanha</th><th>Tipo</th><th>Modalidade</th>
+                      <th>Pontos totais</th><th>Duração</th><th>Pontos/mês</th>
+                      <th>Custo</th><th>Situação</th><th>CPM</th><th>Confiança</th><th>Regulamento</th>
+                    </tr>
+                  </thead>
                   <tbody>{campaigns.map((item) => (
                     <tr key={item.id}>
                       <td className="fw-semibold">{item.company}</td>
                       <td><div>{item.title}</div><small className="text-secondary">{item.category}</small></td>
+                      <td><span className="badge text-bg-primary">{typeLabels[item.campaign_type] || item.campaign_type}</span></td>
+                      <td>{modalityLabels[item.modality] || item.modality}</td>
                       <td>{number.format(item.bonus_points)}</td>
-                      <td>{money.format(item.cost_brl)}</td>
-                      <td>{item.cpm === null ? '—' : money.format(item.cpm)}</td>
-                      <td><span className={`badge ${item.hc_score >= 80 ? 'text-bg-success' : item.hc_score >= 60 ? 'text-bg-warning' : 'text-bg-secondary'}`}>{item.hc_score}</span></td>
-                      <td>{item.anomaly_score}</td>
+                      <td>{item.duration_months ? `${item.duration_months} meses` : 'Não identificada'}</td>
+                      <td>{item.monthly_points === null ? 'Não calculado' : number.format(item.monthly_points)}</td>
+                      <td>{item.cost_status === 'unknown' ? 'Custo desconhecido' : money.format(item.cost_brl)}</td>
+                      <td>{item.cost_status === 'known' ? 'Confirmado' : item.cost_status === 'estimated' ? 'Estimado' : 'Desconhecido'}</td>
+                      <td>{item.cpm === null ? 'Não calculado' : money.format(item.cpm)}</td>
+                      <td>
+                        <span className={`badge ${confidenceClasses[item.extraction_confidence] || 'text-bg-secondary'}`}>
+                          {confidenceLabels[item.extraction_confidence] || item.extraction_confidence}
+                        </span>
+                      </td>
+                      <td>
+                        {item.regulation_url
+                          ? <a href={item.regulation_url} target="_blank" rel="noreferrer">Abrir</a>
+                          : 'Indisponível'}
+                      </td>
                     </tr>
                   ))}</tbody>
                 </table>
