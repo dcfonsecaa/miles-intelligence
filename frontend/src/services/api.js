@@ -11,3 +11,13 @@ export async function runDemoScan() {
   if (!response.ok) throw new Error('Não foi possível executar a varredura.');
   return response.json();
 }
+
+
+export async function runLiveloScan() {
+  const response = await fetch(`${API_URL}/campaigns/scan/livelo`, { method: 'POST' });
+  if (!response.ok) {
+    const payload = await response.json().catch(() => ({}));
+    throw new Error(payload.detail || 'Não foi possível consultar a Livelo.');
+  }
+  return response.json();
+}

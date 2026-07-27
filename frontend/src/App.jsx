@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { listCampaigns, runDemoScan } from './services/api';
+import { listCampaigns, runDemoScan, runLiveloScan } from './services/api';
 
 const money = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
 const number = new Intl.NumberFormat('pt-BR');
@@ -20,11 +20,22 @@ export default function App() {
     }
   }
 
-  async function scan() {
+  async function scanDemo() {
     setMessage('Executando varredura de demonstração...');
     try {
       const result = await runDemoScan();
       setMessage(`Varredura concluída: ${result.inserted} nova(s), ${result.duplicates} já conhecida(s).`);
+      await load();
+    } catch (error) {
+      setMessage(error.message);
+    }
+  }
+
+  async function scanLivelo() {
+    setMessage('Consultando regulamentos oficiais da Livelo...');
+    try {
+      const result = await runLiveloScan();
+      setMessage(`Livelo consultada: ${result.inserted} nova(s), ${result.duplicates} já conhecida(s).`);
       await load();
     } catch (error) {
       setMessage(error.message);
@@ -46,7 +57,10 @@ export default function App() {
           <span className="badge text-bg-warning mb-3">Radar HC · MVP</span>
           <h1 className="display-5 fw-bold">Miles Intelligence</h1>
           <p className="lead col-lg-8 mb-4">Detector de campanhas anormais, custo por milheiro e oportunidades excepcionais.</p>
-          <button className="btn btn-light btn-lg" onClick={scan}>Executar primeira varredura</button>
+          <div className="d-flex flex-wrap gap-2">
+            <button className="btn btn-light btn-lg" onClick={scanLivelo}>Consultar Livelo</button>
+            <button className="btn btn-outline-light btn-lg" onClick={scanDemo}>Rodar demonstração</button>
+          </div>
         </div>
       </header>
 
