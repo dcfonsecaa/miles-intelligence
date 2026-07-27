@@ -1,0 +1,3 @@
+:root { font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+.hero { background: radial-gradient(circle at top right, #2667ff 0, #10254d 48%, #081225 100%); }
+.table th { white-space: nowrap; color: #5f6b7a; font-size: .82rem; text-transform: uppercase; letter-spacing: .03em; }
