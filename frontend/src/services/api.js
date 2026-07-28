@@ -21,3 +21,27 @@ export async function runLiveloScan() {
   }
   return response.json();
 }
+
+export async function getCampaignHistory(campaignId) {
+  const response = await fetch(`${API_URL}/campaigns/${campaignId}/history`);
+  if (!response.ok) throw new Error('Não foi possível carregar o histórico.');
+  return response.json();
+}
+
+export async function getCampaignIntelligence(campaignId) {
+  const response = await fetch(`${API_URL}/campaigns/${campaignId}/intelligence`);
+  if (!response.ok) throw new Error('Não foi possível carregar a análise.');
+  return response.json();
+}
+
+export async function getIntelligenceHighlights() {
+  const response = await fetch(`${API_URL}/intelligence/highlights`);
+  if (!response.ok) throw new Error('Não foi possível carregar os destaques.');
+  return response.json();
+}
+
+export async function recalculateIntelligence() {
+  const response = await fetch(`${API_URL}/campaigns/recalculate-intelligence`, { method: 'POST' });
+  if (!response.ok) throw new Error('Não foi possível recalcular as análises.');
+  return response.json();
+}

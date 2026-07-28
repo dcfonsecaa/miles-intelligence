@@ -87,11 +87,19 @@ class CampaignRead(CampaignCreate):
 
 class ScanCampaignRead(CampaignRead):
     action: str
+    change_type: str
+    analysis_status: str
+    recommendation_level: str
+    confidence_level: str
+    attention_required: bool
 
 
 class ScanResult(BaseModel):
     analyzed: int
     inserted: int
+    updated: int = 0
+    unchanged: int = 0
+    errors: int = 0
     duplicates: int
     campaigns: list[ScanCampaignRead]
 

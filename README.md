@@ -90,3 +90,24 @@ Detalhes:
 - O parser usa regras determinísticas e não utiliza IA externa.
 - Campanhas ambíguas podem permanecer com classificação ou modalidade desconhecida.
 - O Collector Livelo depende da estrutura HTML da página oficial.
+
+## History Engine
+
+Cada campanha possui snapshots imutáveis dos estados relevantes. Coletas idênticas não duplicam a campanha nem o histórico. Mudanças em pontos, custo, duração, datas, status ou título geram um novo snapshot, uma classificação e um resumo legível.
+
+Tipos de mudança: `created`, `points_increased`, `points_decreased`, `cost_changed`, `duration_changed`, `dates_changed`, `status_changed`, `title_changed` e `multiple_changes`.
+
+## Intelligence Engine v1
+
+O motor compara a campanha atual com seu histórico e com campanhas da mesma empresa e tipo. Ele identifica recordes de pontos, variação percentual, posição histórica e recordes de CPM conhecido.
+
+Recomendações possíveis: dados insuficientes, monitorar, analisar agora, potencialmente atrativa, atrativa e pouco atrativa. Uma campanha nunca é recomendada apenas por possuir muitos pontos.
+
+Análises com custo desconhecido são **preliminares**: custo e CPM permanecem `null`, a confiança nunca é alta e o sistema solicita confirmação do regulamento. A análise só é **completa** quando o custo é conhecido.
+
+Documentação:
+
+- [History Engine](docs/HISTORY_ENGINE.md)
+- [Intelligence Engine](docs/INTELLIGENCE_ENGINE.md)
+
+O motor v1 usa regras determinísticas e limiares fixos. A qualidade da análise depende do volume de histórico comparável e não inclui previsão estatística nem APIs externas de IA.
