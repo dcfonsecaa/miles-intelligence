@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
   getCampaignHistory,
+  getCampaignAIAnalysis,
   getCampaignIntelligence,
   getIntelligenceDashboard,
   getIntelligenceHighlights,
@@ -127,11 +128,12 @@ export default function App() {
 
   async function openDetails(campaign) {
     try {
-      const [history, intelligence] = await Promise.all([
+      const [history, intelligence, aiAnalysis] = await Promise.all([
         getCampaignHistory(campaign.id),
         getCampaignIntelligence(campaign.id),
+        getCampaignAIAnalysis(campaign.id),
       ]);
-      setDetails({ campaign, history, intelligence });
+      setDetails({ campaign, history, intelligence, aiAnalysis });
     } catch (error) {
       setMessage(error.message);
     }
@@ -389,7 +391,9 @@ function IntelligenceDashboard({
 }
 
 function CampaignDetails({ details, onClose }) {
-  const { campaign, history, intelligence } = details;
+  const {
+    campaign, history, intelligence, aiAnalysis,
+  } = details;
   return (
     <>
       <div className="modal d-block" tabIndex="-1" role="dialog">
@@ -412,6 +416,14 @@ function CampaignDetails({ details, onClose }) {
                   <p>{intelligence.recommendation_text}</p>
                   <ul>{intelligence.reasons.map((reason) => <li key={reason}>{reason}</li>)}</ul>
                   {campaign.regulation_url && <a href={campaign.regulation_url} target="_blank" rel="noreferrer">Abrir regulamento</a>}
+                  <hr />
+                  <h3 className="h5">Análise inteligente</h3>
+                  <span className="badge text-bg-info mb-2">{aiAnalysis.recommendation_label}</span>
+                  <p>{aiAnalysis.automatic_summary}</p>
+                  <p>{aiAnalysis.recommendation_text}</p>
+                  <h4 className="h6">Como o HC Score foi calculado</h4>
+                  <ul>{aiAnalysis.hc_score_explanation.map((reason) => <li key={reason}>{reason}</li>)}</ul>
+                  <small className="text-secondary">{aiAnalysis.forecast_message}</small>
                 </div>
                 <div className="col-lg-7">
                   <h3 className="h5">Linha do tempo</h3>
@@ -429,6 +441,22 @@ function CampaignDetails({ details, onClose }) {
                         </small>
                       </div>
                     ))}
+                  </div>
+                  <h3 className="h5 mt-4">Campanhas semelhantes</h3>
+                  <div className="list-group">
+                    {aiAnalysis.similar_campaigns.map((similar) => (
+                      <div className="list-group-item" key={similar.campaign_id}>
+                        <div className="d-flex justify-content-between gap-3">
+                          <strong>{similar.title}</strong>
+                          <span>HC {similar.hc_score.toFixed(1)}</span>
+                        </div>
+                        <small className="text-secondary">
+                          {similar.company} · diferença de {similar.hc_score_difference.toFixed(1)} ponto(s)
+                        </small>
+                      </div>
+                    ))}
+                    {aiAnalysis.similar_campaigns.length === 0
+                      && <div className="list-group-item text-secondary">Sem campanhas comparáveis.</div>}
                   </div>
                 </div>
               </div>

@@ -79,6 +79,12 @@ export async function getCampaignIntelligence(campaignId) {
   return response.json();
 }
 
+export async function getCampaignAIAnalysis(campaignId) {
+  const response = await fetch(`${API_URL}/intelligence/${campaignId}/ai-analysis`);
+  if (!response.ok) throw new Error('Não foi possível gerar a análise inteligente.');
+  return response.json();
+}
+
 export async function getIntelligenceHighlights() {
   const response = await fetch(`${API_URL}/intelligence/highlights`);
   if (!response.ok) throw new Error('Não foi possível carregar os destaques.');
