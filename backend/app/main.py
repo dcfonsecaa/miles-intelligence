@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.campaigns import router as campaigns_router
 from app.api.intelligence import router as intelligence_router
+from app.api.scanner import router as scanner_router
 from app.core.campaign_migration import migrate_campaign_model_v2
 from app.core.config import settings
 from app.core.database import Base, engine
@@ -29,3 +30,4 @@ def health_check():
 
 app.include_router(campaigns_router, prefix="/api")
 app.include_router(intelligence_router, prefix="/api")
+app.include_router(scanner_router, prefix="/api")

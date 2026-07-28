@@ -145,7 +145,7 @@ export default function App() {
             <button className="btn btn-success btn-lg" onClick={() => runScan('smiles')}>Consultar Smiles</button>
             <button className="btn btn-danger btn-lg" onClick={() => runScan('latam-pass')}>Consultar LATAM Pass</button>
             <button className="btn btn-info btn-lg" onClick={() => runScan('azul-fidelidade')}>Consultar Azul Fidelidade</button>
-            <button className="btn btn-dark btn-lg" onClick={() => runScan('all')}>Consultar todas</button>
+            <button className="btn btn-dark btn-lg" onClick={() => runScan('all')}>Consultar Tudo</button>
             <button className="btn btn-outline-light btn-lg" onClick={() => runScan('demo')}>Rodar demonstração</button>
             <button className="btn btn-outline-warning btn-lg" onClick={recalculate}>Recalcular análises</button>
           </div>

@@ -16,6 +16,7 @@ MVP do Radar HC: uma plataforma de inteligência para detectar campanhas de pont
 - Collector Smiles v1 com campanhas oficiais, transferências e Clube Smiles
 - Collector LATAM Pass v1 com ofertas e promoções oficiais
 - Collector Azul Fidelidade v1 e varredura agregada das cinco fontes
+- Scanner Global com ranking único ordenado por HC Score
 - Dashboard React + Vite + Bootstrap
 - Testes automatizados do motor de pontuação
 
@@ -65,6 +66,7 @@ curl -X POST http://localhost:8000/api/campaigns/scan/smiles
 curl -X POST http://localhost:8000/api/campaigns/scan/latam-pass
 curl -X POST http://localhost:8000/api/campaigns/scan/azul-fidelidade
 curl -X POST http://localhost:8000/api/campaigns/scan/all
+curl -X POST http://localhost:8000/api/scan/all
 ```
 
 O collector acessa a página oficial de regulamentos ativos, identifica blocos promocionais, extrai título, link, período e quantidade explícita de pontos. Os valores financeiros permanecem desconhecidos (`null`) até que um parser específico de regulamento consiga confirmar o custo real; portanto, o score desta etapa é preliminar.

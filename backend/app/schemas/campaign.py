@@ -124,6 +124,10 @@ class AllCollectorsScanResult(ScanResult):
     sources: list[CollectorSourceResult]
 
 
+class GlobalScanResult(AllCollectorsScanResult):
+    ranking: list[ScanCampaignRead]
+
+
 class CampaignRawRead(BaseModel):
     id: int
     campaign_key: str
