@@ -8,9 +8,23 @@ class ScoreResult:
     anomaly_score: float
 
 
-def calculate_scores(*, bonus_points: int, cost_brl: float, historical_avg_cpm: float = 28.0) -> ScoreResult:
+def calculate_scores(
+    *,
+    bonus_points: int,
+    cost_brl: float | None,
+    cost_status: str = "known",
+    historical_avg_cpm: float = 28.0,
+) -> ScoreResult:
     if bonus_points <= 0:
         return ScoreResult(cpm=None, hc_score=10.0, anomaly_score=0.0)
+
+    if cost_status == "unknown" or cost_brl is None:
+        scale_score = min(100.0, bonus_points / 1000)
+        return ScoreResult(
+            cpm=None,
+            hc_score=round(scale_score * 0.3, 1),
+            anomaly_score=round(scale_score * 0.25, 1),
+        )
 
     cpm = round((cost_brl / bonus_points) * 1000, 2) if cost_brl > 0 else 0.0
 

@@ -58,4 +58,35 @@ Com o backend em execução, dispare a coleta real pela documentação Swagger o
 curl -X POST http://localhost:8000/api/campaigns/scan/livelo
 ```
 
-O collector acessa a página oficial de regulamentos ativos, identifica blocos promocionais, extrai título, link, período e quantidade explícita de pontos. Os valores financeiros permanecem zerados até que um parser específico de regulamento consiga confirmar o custo real; portanto, o score desta etapa é preliminar.
+O collector acessa a página oficial de regulamentos ativos, identifica blocos promocionais, extrai título, link, período e quantidade explícita de pontos. Os valores financeiros permanecem desconhecidos (`null`) até que um parser específico de regulamento consiga confirmar o custo real; portanto, o score desta etapa é preliminar.
+
+## Campaign Model V2
+
+As campanhas passam por uma camada de normalização antes da persistência. O sistema registra separadamente programa, tipo, modalidade, parceiro, pontos totais e mensais, duração, período, elegibilidade, URLs de origem e regulamento, qualidade da extração e dados brutos.
+
+### Situação do custo
+
+- `known`: custo confirmado;
+- `estimated`: custo estimado;
+- `unknown`: custo não confirmado.
+
+Campanhas com custo desconhecido usam `cost_brl = null` e `cpm = null`. Elas não são apresentadas como avaliação financeira definitiva.
+
+### Tipos de campanha
+
+Os tipos controlados incluem assinatura/adesão, upgrade, compra de pontos, transferência bonificada, aquisição de cartão, abertura de conta, seguro, investimento, shopping, viagem e outros.
+
+### Identidade estável
+
+`campaign_key` é derivada de empresa, título normalizado, URL do regulamento, tipo e modalidade. A chave permite deduplicar a mesma campanha sem confundir ofertas diferentes publicadas na mesma página.
+
+Detalhes:
+
+- [Campaign Model V2](docs/CAMPAIGN_MODEL_V2.md)
+- [Regras de normalização](docs/NORMALIZATION_RULES.md)
+
+### Limitações atuais
+
+- O parser usa regras determinísticas e não utiliza IA externa.
+- Campanhas ambíguas podem permanecer com classificação ou modalidade desconhecida.
+- O Collector Livelo depende da estrutura HTML da página oficial.
