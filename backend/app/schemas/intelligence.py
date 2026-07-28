@@ -92,6 +92,26 @@ class IntelligenceHighlights(BaseModel):
     preliminary_analyses: list[HighlightCampaign]
 
 
+class RecentHistoryItem(BaseModel):
+    snapshot_id: int
+    campaign_id: int
+    company: str
+    program_name: str | None
+    title: str
+    captured_at: datetime
+    change_type: ChangeType
+    change_summary: str
+    hc_score: float
+
+
+class IntelligenceDashboard(BaseModel):
+    best_campaign_today: HighlightCampaign | None
+    ranking: list[HighlightCampaign]
+    recent_history: list[RecentHistoryItem]
+    last_updated_at: datetime | None
+    programs: list[str]
+
+
 class RecalculationResult(BaseModel):
     recalculated: int
     analyses: list[CampaignIntelligenceRead]

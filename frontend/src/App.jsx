@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import {
   getCampaignHistory,
   getCampaignIntelligence,
+  getIntelligenceDashboard,
   getIntelligenceHighlights,
   listCampaigns,
   recalculateIntelligence,
@@ -39,26 +40,37 @@ const emptyHighlights = {
   new_campaigns: [], changed_campaigns: [], points_records: [],
   attention_required: [], unknown_cost: [], preliminary_analyses: [],
 };
+const emptyDashboard = {
+  best_campaign_today: null, ranking: [], recent_history: [],
+  last_updated_at: null, programs: [],
+};
 
 export default function App() {
   const [campaigns, setCampaigns] = useState([]);
   const [highlights, setHighlights] = useState(emptyHighlights);
+  const [dashboard, setDashboard] = useState(emptyDashboard);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
   const [details, setDetails] = useState(null);
   const [sourceFilter, setSourceFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState('all');
+  const [programFilter, setProgramFilter] = useState('all');
 
   async function load() {
     setLoading(true);
     try {
-      const [items, summary] = await Promise.all([listCampaigns(), getIntelligenceHighlights()]);
+      const [items, summary, dashboardData] = await Promise.all([
+        listCampaigns(),
+        getIntelligenceHighlights(),
+        getIntelligenceDashboard(),
+      ]);
       const enriched = await Promise.all(items.map(async (campaign) => ({
         ...campaign,
         intelligence: await getCampaignIntelligence(campaign.id),
       })));
       setCampaigns(enriched);
       setHighlights(summary);
+      setDashboard(dashboardData);
     } catch (error) {
       setMessage(error.message);
     } finally {
@@ -130,7 +142,22 @@ export default function App() {
   const filteredCampaigns = campaigns.filter((item) => (
     (sourceFilter === 'all' || item.company === sourceFilter)
     && (typeFilter === 'all' || item.campaign_type === typeFilter)
+    && (programFilter === 'all' || (item.program_name || item.company) === programFilter)
   ));
+  const dashboardRanking = dashboard.ranking.filter(
+    (item) => programFilter === 'all'
+      || (item.campaign.program_name || item.campaign.company) === programFilter,
+  );
+  const recentHistory = dashboard.recent_history.filter(
+    (item) => programFilter === 'all'
+      || (item.program_name || item.company) === programFilter,
+  );
+  const bestToday = dashboard.best_campaign_today
+    && (programFilter === 'all'
+      || (dashboard.best_campaign_today.campaign.program_name
+        || dashboard.best_campaign_today.campaign.company) === programFilter)
+    ? dashboard.best_campaign_today
+    : null;
 
   return (
     <main className="min-vh-100 bg-light">
@@ -154,6 +181,13 @@ export default function App() {
 
       <section className="container-fluid px-4 py-5">
         {message && <div className="alert alert-info">{message}</div>}
+        <IntelligenceDashboard
+          bestToday={bestToday}
+          ranking={dashboardRanking}
+          recentHistory={recentHistory}
+          lastUpdatedAt={dashboard.last_updated_at}
+          onOpen={openDetails}
+        />
         <div className="row g-3 mb-4">
           {['Livelo', 'Esfera', 'Smiles', 'LATAM Pass', 'Azul Fidelidade'].map((source) => (
             <div className="col-md-6" key={source}>
@@ -185,6 +219,17 @@ export default function App() {
             <div className="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
               <h2 className="h4 mb-0">Campanhas analisadas</h2>
               <div className="d-flex flex-wrap gap-2">
+                <select
+                  className="form-select form-select-sm"
+                  aria-label="Filtrar por programa"
+                  value={programFilter}
+                  onChange={(event) => setProgramFilter(event.target.value)}
+                >
+                  <option value="all">Todos os programas</option>
+                  {dashboard.programs.map((program) => (
+                    <option value={program} key={program}>{program}</option>
+                  ))}
+                </select>
                 <select
                   className="form-select form-select-sm"
                   aria-label="Filtrar por fonte"
@@ -259,6 +304,87 @@ export default function App() {
 
       {details && <CampaignDetails details={details} onClose={() => setDetails(null)} />}
     </main>
+  );
+}
+
+function IntelligenceDashboard({
+  bestToday, ranking, recentHistory, lastUpdatedAt, onOpen,
+}) {
+  return (
+    <section className="mb-4" aria-label="Dashboard Intelligence">
+      <div className="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3">
+        <div>
+          <div className="text-uppercase text-secondary small fw-semibold">Dashboard Intelligence</div>
+          <h2 className="h3 mb-0">Visão geral das oportunidades</h2>
+        </div>
+        <small className="text-secondary">
+          Última atualização: {lastUpdatedAt
+            ? new Date(lastUpdatedAt).toLocaleString('pt-BR')
+            : 'Ainda não disponível'}
+        </small>
+      </div>
+      <div className="row g-3">
+        <div className="col-lg-4">
+          <div className="card border-0 shadow-sm h-100">
+            <div className="card-body">
+              <div className="text-secondary small">Melhor campanha do dia</div>
+              {bestToday ? (
+                <>
+                  <h3 className="h5 mt-2">{bestToday.campaign.title}</h3>
+                  <div className="display-5 fw-bold">{bestToday.campaign.hc_score.toFixed(1)}</div>
+                  <div className="text-secondary mb-3">HC Score · {bestToday.campaign.company}</div>
+                  <button className="btn btn-outline-primary btn-sm" onClick={() => onOpen(bestToday.campaign)}>
+                    Ver análise
+                  </button>
+                </>
+              ) : <p className="text-secondary mt-2 mb-0">Nenhuma campanha detectada hoje.</p>}
+            </div>
+          </div>
+        </div>
+        <div className="col-lg-4">
+          <div className="card border-0 shadow-sm h-100">
+            <div className="card-body">
+              <h3 className="h6">Ranking das campanhas</h3>
+              <div className="vstack gap-2">
+                {ranking.slice(0, 5).map((item, index) => (
+                  <button
+                    className="btn btn-light text-start d-flex justify-content-between"
+                    key={item.campaign.id}
+                    onClick={() => onOpen(item.campaign)}
+                  >
+                    <span>{index + 1}. {item.campaign.title}</span>
+                    <strong>{item.campaign.hc_score.toFixed(1)}</strong>
+                  </button>
+                ))}
+                {ranking.length === 0 && <span className="text-secondary">Sem campanhas no ranking.</span>}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="col-lg-4">
+          <div className="card border-0 shadow-sm h-100">
+            <div className="card-body">
+              <h3 className="h6">Histórico recente</h3>
+              <div className="vstack gap-3">
+                {recentHistory.slice(0, 5).map((item) => (
+                  <div key={item.snapshot_id}>
+                    <div className="d-flex justify-content-between gap-2">
+                      <strong className="small">{item.title}</strong>
+                      <span className="badge text-bg-light">{item.hc_score.toFixed(1)}</span>
+                    </div>
+                    <small className="text-secondary">
+                      {changeLabels[item.change_type] || item.change_type}
+                      {' · '}{new Date(item.captured_at).toLocaleString('pt-BR')}
+                    </small>
+                  </div>
+                ))}
+                {recentHistory.length === 0 && <span className="text-secondary">Sem histórico recente.</span>}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }
 
