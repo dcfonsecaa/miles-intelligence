@@ -17,6 +17,7 @@ MVP do Radar HC: uma plataforma de inteligência para detectar campanhas de pont
 - Collector LATAM Pass v1 com ofertas e promoções oficiais
 - Collector Azul Fidelidade v1 e varredura agregada das cinco fontes
 - Scanner Global com ranking único ordenado por HC Score
+- Dashboard Intelligence com melhor campanha, ranking e histórico recente
 - Dashboard React + Vite + Bootstrap
 - Testes automatizados do motor de pontuação
 

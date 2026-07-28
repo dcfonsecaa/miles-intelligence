@@ -85,6 +85,12 @@ export async function getIntelligenceHighlights() {
   return response.json();
 }
 
+export async function getIntelligenceDashboard() {
+  const response = await fetch(`${API_URL}/intelligence/dashboard`);
+  if (!response.ok) throw new Error('Não foi possível carregar o dashboard de inteligência.');
+  return response.json();
+}
+
 export async function recalculateIntelligence() {
   const response = await fetch(`${API_URL}/campaigns/recalculate-intelligence`, { method: 'POST' });
   if (!response.ok) throw new Error('Não foi possível recalcular as análises.');
