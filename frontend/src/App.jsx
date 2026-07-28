@@ -8,6 +8,7 @@ import {
   runEsferaScan,
   runDemoScan,
   runLiveloScan,
+  runSmilesScan,
 } from './services/api';
 
 const money = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -42,6 +43,8 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
   const [details, setDetails] = useState(null);
+  const [sourceFilter, setSourceFilter] = useState('all');
+  const [typeFilter, setTypeFilter] = useState('all');
 
   async function load() {
     setLoading(true);
@@ -61,12 +64,17 @@ export default function App() {
   }
 
   async function runScan(kind) {
-    const sourceLabels = { livelo: 'Livelo', esfera: 'Esfera' };
+    const sourceLabels = { livelo: 'Livelo', esfera: 'Esfera', smiles: 'Smiles' };
     setMessage(sourceLabels[kind]
       ? `Consultando a fonte oficial da ${sourceLabels[kind]}...`
       : 'Executando demonstração...');
     try {
-      const scans = { livelo: runLiveloScan, esfera: runEsferaScan, demo: runDemoScan };
+      const scans = {
+        livelo: runLiveloScan,
+        esfera: runEsferaScan,
+        smiles: runSmilesScan,
+        demo: runDemoScan,
+      };
       const result = await scans[kind]();
       const source = result.source ? ` (${result.source})` : '';
       setMessage(
@@ -104,6 +112,11 @@ export default function App() {
 
   useEffect(() => { load(); }, []);
 
+  const filteredCampaigns = campaigns.filter((item) => (
+    (sourceFilter === 'all' || item.company === sourceFilter)
+    && (typeFilter === 'all' || item.campaign_type === typeFilter)
+  ));
+
   return (
     <main className="min-vh-100 bg-light">
       <header className="hero text-white py-5">
@@ -114,6 +127,7 @@ export default function App() {
           <div className="d-flex flex-wrap gap-2">
             <button className="btn btn-light btn-lg" onClick={() => runScan('livelo')}>Consultar Livelo</button>
             <button className="btn btn-warning btn-lg" onClick={() => runScan('esfera')}>Consultar Esfera</button>
+            <button className="btn btn-success btn-lg" onClick={() => runScan('smiles')}>Consultar Smiles</button>
             <button className="btn btn-outline-light btn-lg" onClick={() => runScan('demo')}>Rodar demonstração</button>
             <button className="btn btn-outline-warning btn-lg" onClick={recalculate}>Recalcular análises</button>
           </div>
@@ -123,7 +137,7 @@ export default function App() {
       <section className="container-fluid px-4 py-5">
         {message && <div className="alert alert-info">{message}</div>}
         <div className="row g-3 mb-4">
-          {['Livelo', 'Esfera'].map((source) => (
+          {['Livelo', 'Esfera', 'Smiles'].map((source) => (
             <div className="col-md-6" key={source}>
               <div className="card border-0 shadow-sm h-100">
                 <div className="card-body d-flex justify-content-between align-items-center">
@@ -150,12 +164,38 @@ export default function App() {
 
         <div className="card border-0 shadow-sm">
           <div className="card-body p-4">
-            <div className="d-flex justify-content-between align-items-center mb-3">
+            <div className="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
               <h2 className="h4 mb-0">Campanhas analisadas</h2>
-              <button className="btn btn-outline-dark btn-sm" onClick={load}>Atualizar</button>
+              <div className="d-flex flex-wrap gap-2">
+                <select
+                  className="form-select form-select-sm"
+                  aria-label="Filtrar por fonte"
+                  value={sourceFilter}
+                  onChange={(event) => setSourceFilter(event.target.value)}
+                >
+                  <option value="all">Todas as fontes</option>
+                  <option value="Livelo">Livelo</option>
+                  <option value="Esfera">Esfera</option>
+                  <option value="Smiles">Smiles</option>
+                </select>
+                <select
+                  className="form-select form-select-sm"
+                  aria-label="Filtrar por tipo"
+                  value={typeFilter}
+                  onChange={(event) => setTypeFilter(event.target.value)}
+                >
+                  <option value="all">Todos os tipos</option>
+                  {Object.entries(typeLabels).map(([value, label]) => (
+                    <option value={value} key={value}>{label}</option>
+                  ))}
+                </select>
+                <button className="btn btn-outline-dark btn-sm" onClick={load}>Atualizar</button>
+              </div>
             </div>
             {loading ? <p>Carregando...</p> : campaigns.length === 0 ? (
               <p className="text-secondary mb-0">Nenhuma campanha salva.</p>
+            ) : filteredCampaigns.length === 0 ? (
+              <p className="text-secondary mb-0">Nenhuma campanha corresponde aos filtros.</p>
             ) : (
               <div className="table-responsive">
                 <table className="table align-middle">
@@ -163,7 +203,7 @@ export default function App() {
                     <th>Empresa</th><th>Campanha</th><th>Tipo</th><th>Pontos</th>
                     <th>Custo / CPM</th><th>Análise</th><th>Recomendação</th><th>Confiança</th><th></th>
                   </tr></thead>
-                  <tbody>{campaigns.map((item) => (
+                  <tbody>{filteredCampaigns.map((item) => (
                     <tr key={item.id}>
                       <td className="fw-semibold">{item.company}</td>
                       <td>
