@@ -113,10 +113,14 @@ def build_campaign_key(
     regulation_url: str | None,
     campaign_type: CampaignType | str,
     modality: Modality | str,
+    program_name: str | None = None,
+    partner_name: str | None = None,
 ) -> str:
     parts = (
         _ascii_fold(company),
+        _ascii_fold(program_name or ""),
         _ascii_fold(normalized_title),
+        _ascii_fold(partner_name or ""),
         (regulation_url or "").strip().casefold(),
         str(getattr(campaign_type, "value", campaign_type)),
         str(getattr(modality, "value", modality)),
@@ -180,6 +184,8 @@ def normalize_campaign(payload: CampaignCreate) -> CampaignCreate:
         regulation_url=regulation_url,
         campaign_type=campaign_type,
         modality=modality,
+        program_name=payload.program_name or ("Clube Livelo" if company_is_livelo else None),
+        partner_name=payload.partner_name,
     )
 
     return payload.model_copy(

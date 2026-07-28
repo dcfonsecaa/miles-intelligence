@@ -5,6 +5,7 @@ import {
   getIntelligenceHighlights,
   listCampaigns,
   recalculateIntelligence,
+  runEsferaScan,
   runDemoScan,
   runLiveloScan,
 } from './services/api';
@@ -60,11 +61,16 @@ export default function App() {
   }
 
   async function runScan(kind) {
-    setMessage(kind === 'livelo' ? 'Consultando regulamentos oficiais da Livelo...' : 'Executando demonstração...');
+    const sourceLabels = { livelo: 'Livelo', esfera: 'Esfera' };
+    setMessage(sourceLabels[kind]
+      ? `Consultando a fonte oficial da ${sourceLabels[kind]}...`
+      : 'Executando demonstração...');
     try {
-      const result = kind === 'livelo' ? await runLiveloScan() : await runDemoScan();
+      const scans = { livelo: runLiveloScan, esfera: runEsferaScan, demo: runDemoScan };
+      const result = await scans[kind]();
+      const source = result.source ? ` (${result.source})` : '';
       setMessage(
-        `Coleta concluída: ${result.inserted} nova(s), ${result.updated} alterada(s), `
+        `Coleta concluída${source}: ${result.inserted} nova(s), ${result.updated} alterada(s), `
         + `${result.unchanged} sem mudança e ${result.errors} erro(s).`,
       );
       await load();
@@ -107,6 +113,7 @@ export default function App() {
           <p className="lead col-lg-9">Histórico de campanhas, mudanças detectadas e análises determinísticas.</p>
           <div className="d-flex flex-wrap gap-2">
             <button className="btn btn-light btn-lg" onClick={() => runScan('livelo')}>Consultar Livelo</button>
+            <button className="btn btn-warning btn-lg" onClick={() => runScan('esfera')}>Consultar Esfera</button>
             <button className="btn btn-outline-light btn-lg" onClick={() => runScan('demo')}>Rodar demonstração</button>
             <button className="btn btn-outline-warning btn-lg" onClick={recalculate}>Recalcular análises</button>
           </div>
@@ -116,6 +123,24 @@ export default function App() {
       <section className="container-fluid px-4 py-5">
         {message && <div className="alert alert-info">{message}</div>}
         <div className="row g-3 mb-4">
+          {['Livelo', 'Esfera'].map((source) => (
+            <div className="col-md-6" key={source}>
+              <div className="card border-0 shadow-sm h-100">
+                <div className="card-body d-flex justify-content-between align-items-center">
+                  <div>
+                    <div className="text-secondary small">Fonte oficial</div>
+                    <div className="h5 mb-0">{source}</div>
+                  </div>
+                  <span className="badge text-bg-dark">
+                    {campaigns.filter((item) => item.company === source).length} campanha(s)
+                  </span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="row g-3 mb-4">
+          <Stat title="Total geral de campanhas" value={campaigns.length} />
           <Stat title="Campanhas novas" value={highlights.new_campaigns.length} />
           <Stat title="Campanhas alteradas" value={highlights.changed_campaigns.length} />
           <Stat title="Recordes de pontos" value={highlights.points_records.length} />
