@@ -112,6 +112,23 @@ Cada campanha possui snapshots imutáveis dos estados relevantes. Coletas idênt
 
 Tipos de mudança: `created`, `points_increased`, `points_decreased`, `cost_changed`, `duration_changed`, `dates_changed`, `status_changed`, `title_changed` e `multiple_changes`.
 
+## Dashboard web profissional
+
+O frontend oferece uma visão operacional responsiva com indicadores, melhor campanha do dia,
+ranking por HC Score, notícias, histórico recente, filtros combináveis e acompanhamento dos cinco
+collectors. A atualização global usa `POST /api/campaigns/scan/all` e preserva resultados válidos
+quando uma fonte falha.
+
+Campanhas sem custo confirmado exibem “Custo não confirmado”, permanecem fora da comparação de
+CPM e recebem análise preliminar. Consulte [a documentação do dashboard](docs/DASHBOARD_WEB.md)
+para conhecer os componentes, estados, integração e limitações.
+
+```bash
+cd frontend
+npm run test
+npm run build
+```
+
 ## Intelligence Engine v1
 
 O motor compara a campanha atual com seu histórico e com campanhas da mesma empresa e tipo. Ele identifica recordes de pontos, variação percentual, posição histórica e recordes de CPM conhecido.
