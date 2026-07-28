@@ -133,6 +133,11 @@ def scan_esfera(db: Session = Depends(get_db)):
     return _run_collector("esfera", db)
 
 
+@router.post("/scan/smiles", response_model=CollectorScanResult)
+def scan_smiles(db: Session = Depends(get_db)):
+    return _run_collector("smiles", db)
+
+
 @router.post("/recalculate-intelligence", response_model=RecalculationResult)
 def recalculate_intelligence(db: Session = Depends(get_db)):
     analyses = recalculate_all(db)

@@ -31,6 +31,15 @@ export async function runEsferaScan() {
   return response.json();
 }
 
+export async function runSmilesScan() {
+  const response = await fetch(`${API_URL}/campaigns/scan/smiles`, { method: 'POST' });
+  if (!response.ok) {
+    const payload = await response.json().catch(() => ({}));
+    throw new Error(payload.detail || 'Não foi possível consultar a Smiles.');
+  }
+  return response.json();
+}
+
 export async function getCampaignHistory(campaignId) {
   const response = await fetch(`${API_URL}/campaigns/${campaignId}/history`);
   if (!response.ok) throw new Error('Não foi possível carregar o histórico.');
