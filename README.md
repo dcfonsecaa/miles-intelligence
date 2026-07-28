@@ -15,6 +15,7 @@ MVP do Radar HC: uma plataforma de inteligência para detectar campanhas de pont
 - Arquitetura reutilizável de collectors e Collector Esfera v1
 - Collector Smiles v1 com campanhas oficiais, transferências e Clube Smiles
 - Collector LATAM Pass v1 com ofertas e promoções oficiais
+- Collector Azul Fidelidade v1 e varredura agregada das cinco fontes
 - Dashboard React + Vite + Bootstrap
 - Testes automatizados do motor de pontuação
 
@@ -46,7 +47,7 @@ Dashboard: `http://localhost:5173`
 ## Próximas etapas
 
 1. Validar e fortalecer o Collector Livelo em diferentes formatos de regulamento.
-2. Adicionar o conector Azul Fidelidade.
+2. Fortalecer os parsers conforme novos formatos oficiais forem publicados.
 3. Criar histórico de versões de regulamentos.
 4. Adicionar PostgreSQL e migrações.
 5. Implementar autenticação.
@@ -62,6 +63,8 @@ curl -X POST http://localhost:8000/api/campaigns/scan/livelo
 curl -X POST http://localhost:8000/api/campaigns/scan/esfera
 curl -X POST http://localhost:8000/api/campaigns/scan/smiles
 curl -X POST http://localhost:8000/api/campaigns/scan/latam-pass
+curl -X POST http://localhost:8000/api/campaigns/scan/azul-fidelidade
+curl -X POST http://localhost:8000/api/campaigns/scan/all
 ```
 
 O collector acessa a página oficial de regulamentos ativos, identifica blocos promocionais, extrai título, link, período e quantidade explícita de pontos. Os valores financeiros permanecem desconhecidos (`null`) até que um parser específico de regulamento consiga confirmar o custo real; portanto, o score desta etapa é preliminar.
@@ -99,6 +102,7 @@ Detalhes:
 - O Collector Esfera depende da estrutura HTML da página oficial de termos e condições.
 - O Collector Smiles depende dos cartões e links publicados na página oficial de promoções.
 - O Collector LATAM Pass depende dos cartões e links publicados na página oficial de ofertas.
+- O Collector Azul Fidelidade depende dos cartões e links publicados na página oficial de ofertas em pontos.
 
 ## History Engine
 

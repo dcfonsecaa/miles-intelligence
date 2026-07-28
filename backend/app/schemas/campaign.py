@@ -108,6 +108,22 @@ class CollectorScanResult(ScanResult):
     source: str
 
 
+class CollectorSourceResult(BaseModel):
+    source: str
+    status: str
+    analyzed: int = 0
+    inserted: int = 0
+    updated: int = 0
+    unchanged: int = 0
+    errors: int = 0
+    campaigns: list[ScanCampaignRead] = Field(default_factory=list)
+    error: str | None = None
+
+
+class AllCollectorsScanResult(ScanResult):
+    sources: list[CollectorSourceResult]
+
+
 class CampaignRawRead(BaseModel):
     id: int
     campaign_key: str

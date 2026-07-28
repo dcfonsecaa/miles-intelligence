@@ -1,4 +1,5 @@
 from app.collectors.base import BaseCollector
+from app.collectors.azul_fidelidade import AzulFidelidadeCollector
 from app.collectors.esfera import EsferaCollector
 from app.collectors.livelo import LiveloCollector
 from app.collectors.latam_pass import LatamPassCollector
@@ -9,6 +10,7 @@ _COLLECTORS: dict[str, BaseCollector] = {
     "esfera": EsferaCollector(),
     "smiles": SmilesCollector(),
     "latam-pass": LatamPassCollector(),
+    "azul-fidelidade": AzulFidelidadeCollector(),
 }
 
 
