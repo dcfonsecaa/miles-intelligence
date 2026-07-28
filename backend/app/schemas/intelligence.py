@@ -112,6 +112,31 @@ class IntelligenceDashboard(BaseModel):
     programs: list[str]
 
 
+class SimilarCampaignRead(BaseModel):
+    campaign_id: int
+    company: str
+    program_name: str | None
+    title: str
+    hc_score: float
+    hc_score_difference: float
+    bonus_points: int
+    cpm: float | None
+
+
+class CampaignAIAnalysis(BaseModel):
+    campaign_id: int
+    engine: str
+    generated_at: datetime
+    automatic_summary: str
+    hc_score_explanation: list[str]
+    recommendation_code: str
+    recommendation_label: str
+    recommendation_text: str
+    similar_campaigns: list[SimilarCampaignRead]
+    forecast_status: str
+    forecast_message: str
+
+
 class RecalculationResult(BaseModel):
     recalculated: int
     analyses: list[CampaignIntelligenceRead]

@@ -18,6 +18,7 @@ MVP do Radar HC: uma plataforma de inteligência para detectar campanhas de pont
 - Collector Azul Fidelidade v1 e varredura agregada das cinco fontes
 - Scanner Global com ranking único ordenado por HC Score
 - Dashboard Intelligence com melhor campanha, ranking e histórico recente
+- Intelligence Engine AI-ready com análises explicáveis e sem LLM externo
 - Dashboard React + Vite + Bootstrap
 - Testes automatizados do motor de pontuação
 

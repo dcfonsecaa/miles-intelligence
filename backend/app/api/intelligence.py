@@ -1,6 +1,6 @@
 from datetime import UTC, datetime
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -13,10 +13,12 @@ from app.schemas.intelligence import (
     HighlightCampaign,
     IntelligenceHighlights,
     IntelligenceDashboard,
+    CampaignAIAnalysis,
     RecentHistoryItem,
 )
 from app.services.history_engine import list_snapshots
 from app.services.intelligence_engine import analyze_campaign, get_stored_intelligence
+from app.services.ai_intelligence_engine import campaign_insight_engine
 
 router = APIRouter(prefix="/intelligence", tags=["intelligence"])
 
@@ -132,3 +134,13 @@ def get_dashboard(
         last_updated_at=last_updated,
         programs=programs,
     )
+
+
+@router.get("/{campaign_id}/ai-analysis", response_model=CampaignAIAnalysis)
+def get_ai_analysis(campaign_id: int, db: Session = Depends(get_db)):
+    campaign = db.get(Campaign, campaign_id)
+    if campaign is None:
+        raise HTTPException(status_code=404, detail="Campanha não encontrada.")
+    analysis = campaign_insight_engine.analyze(db, campaign)
+    db.commit()
+    return analysis
