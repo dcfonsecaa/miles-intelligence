@@ -2,12 +2,15 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.campaigns import router as campaigns_router
+from app.api.intelligence import router as intelligence_router
 from app.core.campaign_migration import migrate_campaign_model_v2
 from app.core.config import settings
 from app.core.database import Base, engine
+from app.core.history_migration import migrate_history_engine
 
 migrate_campaign_model_v2(engine)
 Base.metadata.create_all(bind=engine)
+migrate_history_engine(engine)
 
 app = FastAPI(title=settings.app_name, version="0.1.0")
 app.add_middleware(
@@ -25,3 +28,4 @@ def health_check():
 
 
 app.include_router(campaigns_router, prefix="/api")
+app.include_router(intelligence_router, prefix="/api")

@@ -1,6 +1,8 @@
 from sqlalchemy import create_engine, inspect, text
 
 from app.core.campaign_migration import migrate_campaign_model_v2
+from app.core.database import Base
+from app.core.history_migration import migrate_history_engine
 
 
 def test_migration_preserves_legacy_ids_and_converts_livelo_zero_cost(tmp_path):
@@ -45,6 +47,9 @@ def test_migration_preserves_legacy_ids_and_converts_livelo_zero_cost(tmp_path):
 
     migrate_campaign_model_v2(engine)
     migrate_campaign_model_v2(engine)
+    Base.metadata.create_all(engine)
+    migrate_history_engine(engine)
+    migrate_history_engine(engine)
 
     columns = {column["name"] for column in inspect(engine).get_columns("campaigns")}
     assert {"campaign_key", "cost_status", "normalized_title", "monthly_points"}.issubset(columns)
@@ -59,3 +64,8 @@ def test_migration_preserves_legacy_ids_and_converts_livelo_zero_cost(tmp_path):
     assert row["cost_status"] == "unknown"
     assert row["cpm"] is None
     assert row["monthly_points"] == 8000
+    with engine.connect() as connection:
+        history_count = connection.execute(
+            text("SELECT COUNT(*) FROM campaign_snapshots")
+        ).scalar_one()
+    assert history_count == 1
