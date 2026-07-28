@@ -104,6 +104,10 @@ class ScanResult(BaseModel):
     campaigns: list[ScanCampaignRead]
 
 
+class CollectorScanResult(ScanResult):
+    source: str
+
+
 class CampaignRawRead(BaseModel):
     id: int
     campaign_key: str

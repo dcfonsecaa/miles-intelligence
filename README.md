@@ -12,6 +12,7 @@ MVP do Radar HC: uma plataforma de inteligência para detectar campanhas de pont
 - Anomaly Score
 - Varredura simulada idempotente
 - Collector Livelo v1 com leitura da página oficial de regulamentos ativos
+- Arquitetura reutilizável de collectors e Collector Esfera v1
 - Dashboard React + Vite + Bootstrap
 - Testes automatizados do motor de pontuação
 
@@ -43,7 +44,7 @@ Dashboard: `http://localhost:5173`
 ## Próximas etapas
 
 1. Validar e fortalecer o Collector Livelo em diferentes formatos de regulamento.
-2. Adicionar conectores Smiles, Esfera, LATAM Pass e Azul Fidelidade.
+2. Adicionar conectores Smiles, LATAM Pass e Azul Fidelidade.
 3. Criar histórico de versões de regulamentos.
 4. Adicionar PostgreSQL e migrações.
 5. Implementar autenticação.
@@ -56,6 +57,7 @@ Com o backend em execução, dispare a coleta real pela documentação Swagger o
 
 ```bash
 curl -X POST http://localhost:8000/api/campaigns/scan/livelo
+curl -X POST http://localhost:8000/api/campaigns/scan/esfera
 ```
 
 O collector acessa a página oficial de regulamentos ativos, identifica blocos promocionais, extrai título, link, período e quantidade explícita de pontos. Os valores financeiros permanecem desconhecidos (`null`) até que um parser específico de regulamento consiga confirmar o custo real; portanto, o score desta etapa é preliminar.
@@ -90,6 +92,7 @@ Detalhes:
 - O parser usa regras determinísticas e não utiliza IA externa.
 - Campanhas ambíguas podem permanecer com classificação ou modalidade desconhecida.
 - O Collector Livelo depende da estrutura HTML da página oficial.
+- O Collector Esfera depende da estrutura HTML da página oficial de termos e condições.
 
 ## History Engine
 
