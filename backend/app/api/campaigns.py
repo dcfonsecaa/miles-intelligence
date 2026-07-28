@@ -138,6 +138,11 @@ def scan_smiles(db: Session = Depends(get_db)):
     return _run_collector("smiles", db)
 
 
+@router.post("/scan/latam-pass", response_model=CollectorScanResult)
+def scan_latam_pass(db: Session = Depends(get_db)):
+    return _run_collector("latam-pass", db)
+
+
 @router.post("/recalculate-intelligence", response_model=RecalculationResult)
 def recalculate_intelligence(db: Session = Depends(get_db)):
     analyses = recalculate_all(db)

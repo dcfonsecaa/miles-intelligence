@@ -40,6 +40,15 @@ export async function runSmilesScan() {
   return response.json();
 }
 
+export async function runLatamPassScan() {
+  const response = await fetch(`${API_URL}/campaigns/scan/latam-pass`, { method: 'POST' });
+  if (!response.ok) {
+    const payload = await response.json().catch(() => ({}));
+    throw new Error(payload.detail || 'Não foi possível consultar o LATAM Pass.');
+  }
+  return response.json();
+}
+
 export async function getCampaignHistory(campaignId) {
   const response = await fetch(`${API_URL}/campaigns/${campaignId}/history`);
   if (!response.ok) throw new Error('Não foi possível carregar o histórico.');

@@ -8,6 +8,7 @@ import {
   runEsferaScan,
   runDemoScan,
   runLiveloScan,
+  runLatamPassScan,
   runSmilesScan,
 } from './services/api';
 
@@ -64,7 +65,12 @@ export default function App() {
   }
 
   async function runScan(kind) {
-    const sourceLabels = { livelo: 'Livelo', esfera: 'Esfera', smiles: 'Smiles' };
+    const sourceLabels = {
+      livelo: 'Livelo',
+      esfera: 'Esfera',
+      smiles: 'Smiles',
+      'latam-pass': 'LATAM Pass',
+    };
     setMessage(sourceLabels[kind]
       ? `Consultando a fonte oficial da ${sourceLabels[kind]}...`
       : 'Executando demonstração...');
@@ -73,6 +79,7 @@ export default function App() {
         livelo: runLiveloScan,
         esfera: runEsferaScan,
         smiles: runSmilesScan,
+        'latam-pass': runLatamPassScan,
         demo: runDemoScan,
       };
       const result = await scans[kind]();
@@ -128,6 +135,7 @@ export default function App() {
             <button className="btn btn-light btn-lg" onClick={() => runScan('livelo')}>Consultar Livelo</button>
             <button className="btn btn-warning btn-lg" onClick={() => runScan('esfera')}>Consultar Esfera</button>
             <button className="btn btn-success btn-lg" onClick={() => runScan('smiles')}>Consultar Smiles</button>
+            <button className="btn btn-danger btn-lg" onClick={() => runScan('latam-pass')}>Consultar LATAM Pass</button>
             <button className="btn btn-outline-light btn-lg" onClick={() => runScan('demo')}>Rodar demonstração</button>
             <button className="btn btn-outline-warning btn-lg" onClick={recalculate}>Recalcular análises</button>
           </div>
@@ -137,7 +145,7 @@ export default function App() {
       <section className="container-fluid px-4 py-5">
         {message && <div className="alert alert-info">{message}</div>}
         <div className="row g-3 mb-4">
-          {['Livelo', 'Esfera', 'Smiles'].map((source) => (
+          {['Livelo', 'Esfera', 'Smiles', 'LATAM Pass'].map((source) => (
             <div className="col-md-6" key={source}>
               <div className="card border-0 shadow-sm h-100">
                 <div className="card-body d-flex justify-content-between align-items-center">
@@ -177,6 +185,7 @@ export default function App() {
                   <option value="Livelo">Livelo</option>
                   <option value="Esfera">Esfera</option>
                   <option value="Smiles">Smiles</option>
+                  <option value="LATAM Pass">LATAM Pass</option>
                 </select>
                 <select
                   className="form-select form-select-sm"
