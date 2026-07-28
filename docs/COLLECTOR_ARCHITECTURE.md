@@ -36,3 +36,10 @@ Custos não confirmados são persistidos como `cost_brl = null`,
 Crie uma subclasse de `BaseCollector`, implemente `source_name`, `source_url` e
 `parse`, registre-a em `registry.py`, exponha a rota e cubra o parser com fixture
 local. Os testes não devem depender de consultas reais.
+
+## Varredura agregada
+
+`POST /api/campaigns/scan/all` executa sequencialmente Livelo, Esfera, Smiles,
+LATAM Pass e Azul Fidelidade. A resposta contém métricas consolidadas e o
+resultado individual de cada fonte. Uma falha é registrada na fonte afetada,
+faz rollback da sessão e não impede a execução das fontes seguintes.

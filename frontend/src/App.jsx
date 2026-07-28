@@ -5,6 +5,8 @@ import {
   getIntelligenceHighlights,
   listCampaigns,
   recalculateIntelligence,
+  runAllScans,
+  runAzulFidelidadeScan,
   runEsferaScan,
   runDemoScan,
   runLiveloScan,
@@ -70,6 +72,8 @@ export default function App() {
       esfera: 'Esfera',
       smiles: 'Smiles',
       'latam-pass': 'LATAM Pass',
+      'azul-fidelidade': 'Azul Fidelidade',
+      all: 'Todas as fontes',
     };
     setMessage(sourceLabels[kind]
       ? `Consultando a fonte oficial da ${sourceLabels[kind]}...`
@@ -80,13 +84,17 @@ export default function App() {
         esfera: runEsferaScan,
         smiles: runSmilesScan,
         'latam-pass': runLatamPassScan,
+        'azul-fidelidade': runAzulFidelidadeScan,
+        all: runAllScans,
         demo: runDemoScan,
       };
       const result = await scans[kind]();
-      const source = result.source ? ` (${result.source})` : '';
+      const source = result.source ? ` (${result.source})` : kind === 'all' ? ' (todas as fontes)' : '';
+      const failedSources = result.sources?.filter((item) => item.status === 'error').length || 0;
       setMessage(
         `Coleta concluída${source}: ${result.inserted} nova(s), ${result.updated} alterada(s), `
-        + `${result.unchanged} sem mudança e ${result.errors} erro(s).`,
+        + `${result.unchanged} sem mudança e ${result.errors} erro(s)`
+        + `${failedSources ? ` em ${failedSources} fonte(s)` : ''}.`,
       );
       await load();
     } catch (error) {
@@ -136,6 +144,8 @@ export default function App() {
             <button className="btn btn-warning btn-lg" onClick={() => runScan('esfera')}>Consultar Esfera</button>
             <button className="btn btn-success btn-lg" onClick={() => runScan('smiles')}>Consultar Smiles</button>
             <button className="btn btn-danger btn-lg" onClick={() => runScan('latam-pass')}>Consultar LATAM Pass</button>
+            <button className="btn btn-info btn-lg" onClick={() => runScan('azul-fidelidade')}>Consultar Azul Fidelidade</button>
+            <button className="btn btn-dark btn-lg" onClick={() => runScan('all')}>Consultar todas</button>
             <button className="btn btn-outline-light btn-lg" onClick={() => runScan('demo')}>Rodar demonstração</button>
             <button className="btn btn-outline-warning btn-lg" onClick={recalculate}>Recalcular análises</button>
           </div>
@@ -145,7 +155,7 @@ export default function App() {
       <section className="container-fluid px-4 py-5">
         {message && <div className="alert alert-info">{message}</div>}
         <div className="row g-3 mb-4">
-          {['Livelo', 'Esfera', 'Smiles', 'LATAM Pass'].map((source) => (
+          {['Livelo', 'Esfera', 'Smiles', 'LATAM Pass', 'Azul Fidelidade'].map((source) => (
             <div className="col-md-6" key={source}>
               <div className="card border-0 shadow-sm h-100">
                 <div className="card-body d-flex justify-content-between align-items-center">
@@ -186,6 +196,7 @@ export default function App() {
                   <option value="Esfera">Esfera</option>
                   <option value="Smiles">Smiles</option>
                   <option value="LATAM Pass">LATAM Pass</option>
+                  <option value="Azul Fidelidade">Azul Fidelidade</option>
                 </select>
                 <select
                   className="form-select form-select-sm"

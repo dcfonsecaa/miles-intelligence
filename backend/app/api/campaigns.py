@@ -14,7 +14,9 @@ from app.core.database import get_db
 from app.models.campaign import Campaign
 from app.schemas.campaign import (
     CampaignCreate,
+    AllCollectorsScanResult,
     CollectorScanResult,
+    CollectorSourceResult,
     CampaignRawRead,
     CampaignRead,
     ScanResult,
@@ -141,6 +143,70 @@ def scan_smiles(db: Session = Depends(get_db)):
 @router.post("/scan/latam-pass", response_model=CollectorScanResult)
 def scan_latam_pass(db: Session = Depends(get_db)):
     return _run_collector("latam-pass", db)
+
+
+@router.post("/scan/azul-fidelidade", response_model=CollectorScanResult)
+def scan_azul_fidelidade(db: Session = Depends(get_db)):
+    return _run_collector("azul-fidelidade", db)
+
+
+@router.post("/scan/all", response_model=AllCollectorsScanResult)
+def scan_all(db: Session = Depends(get_db)):
+    source_keys = ("livelo", "esfera", "smiles", "latam-pass", "azul-fidelidade")
+    sources: list[CollectorSourceResult] = []
+    campaigns = []
+    analyzed = inserted = updated = unchanged = errors = 0
+
+    for source_key in source_keys:
+        collector = get_collector(source_key)
+        try:
+            result = collector.run(db)
+            source_result = CollectorSourceResult(
+                source=result.source,
+                status="success",
+                analyzed=result.analyzed,
+                inserted=result.inserted,
+                updated=result.updated,
+                unchanged=result.unchanged,
+                errors=result.errors,
+                campaigns=result.campaigns,
+            )
+            analyzed += result.analyzed
+            inserted += result.inserted
+            updated += result.updated
+            unchanged += result.unchanged
+            errors += result.errors
+            campaigns.extend(result.campaigns)
+        except CollectorError as exc:
+            db.rollback()
+            source_result = CollectorSourceResult(
+                source=collector.source_name,
+                status="error",
+                errors=1,
+                error=str(exc),
+            )
+            errors += 1
+        except Exception:
+            db.rollback()
+            source_result = CollectorSourceResult(
+                source=collector.source_name,
+                status="error",
+                errors=1,
+                error=f"Falha inesperada na fonte {collector.source_name}.",
+            )
+            errors += 1
+        sources.append(source_result)
+
+    return AllCollectorsScanResult(
+        analyzed=analyzed,
+        inserted=inserted,
+        updated=updated,
+        unchanged=unchanged,
+        errors=errors,
+        duplicates=unchanged,
+        campaigns=campaigns,
+        sources=sources,
+    )
 
 
 @router.post("/recalculate-intelligence", response_model=RecalculationResult)
